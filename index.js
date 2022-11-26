@@ -18,6 +18,8 @@ async function run(){
     try{
         const allCategoriesCollection = client.db('reRollaBike').collection('catagories');
         const singleCategoriesCollection = client.db('reRollaBike').collection('singlecategory');
+        const bookingCollection = client.db('reRollaBike').collection('bookingsBike');
+        const userCollection = client.db('reRollaBike').collection('userTable');
 
         app.get('/categories', async(req, res) =>{
             const query = {};
@@ -40,6 +42,38 @@ async function run(){
           res.send(result);
 
      });
+
+     //
+     app.post('/bookingbike', async(req, res) =>{
+      const bookingBike = req.body
+      console.log(bookingBike);
+      const result = await bookingCollection.insertOne(bookingBike);
+      res.send(result);
+  })
+  app.post('/signup', async(req, res) =>{
+    const addUser = req.body
+    console.log(addUser);
+    const result = await userCollection.insertOne(addUser);
+    res.send(result);
+})
+  //
+  app.put("/login", async (req, res) => {
+    
+    const user = req.body;
+    const filter = { email: user.email }
+
+    const option = { upsert: true };
+    const updateUser = {
+      $set:{
+          name: user.name,
+          email: user.email,
+          role: user.role
+      }
+    }
+    const result = await userCollection.updateOne(filter, updateUser, option)
+
+    res.send(result);
+  });
 
     }
     finally{
