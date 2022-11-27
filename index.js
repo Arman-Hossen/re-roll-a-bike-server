@@ -74,6 +74,13 @@ async function run(){
 
     res.send(result);
   });
+  //role
+  app.get('/roll/:email',async(req, res) =>{
+    const email = req.params.email;
+    const query ={email: email}
+    const service = await userCollection.findOne(query);
+    res.send(service);
+});
 
     }
     finally{
