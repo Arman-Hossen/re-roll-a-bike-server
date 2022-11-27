@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
@@ -14,12 +15,36 @@ app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.oexodue.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+function verifyJWT(req, res, next){
+  console.log("token inside verifyJWT", req.headers.authorization);
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+      return res.status(401).send('unauthorized access');
+  }
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function(err, decoded){
+      if(err){
+      return res.status(403).send({message: 'forbidden access'})
+      }
+      req.decoded = decoded;
+      next();
+  })
+
+}
+
 async function run(){
     try{
+
+
         const allCategoriesCollection = client.db('reRollaBike').collection('catagories');
         const singleCategoriesCollection = client.db('reRollaBike').collection('singlecategory');
         const bookingCollection = client.db('reRollaBike').collection('bookingsBike');
         const userCollection = client.db('reRollaBike').collection('userTable');
+
+
+        
 
         app.get('/categories', async(req, res) =>{
             const query = {};
@@ -42,6 +67,18 @@ async function run(){
           res.send(result);
 
      });
+     //
+     app.get('/jwt', async(req, res) =>{
+      const email = req.query.email;
+      const query = {email:email};
+      const user = await userCollection.findOne(query);
+      if(user){
+          const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'})
+          return res.send({accessToken: token});
+      }
+      res.status(403).send({accessToken: ''})
+      
+  })
 
      //
      app.post('/bookingbike', async(req, res) =>{
@@ -50,6 +87,19 @@ async function run(){
       const result = await bookingCollection.insertOne(bookingBike);
       res.send(result);
   })
+
+  //booking get
+  app.get('/bookingbike', verifyJWT, async(req, res) =>{
+    const email = req.query.email;
+    const decodedEmail = req.decoded.email;
+    if(email!== decodedEmail){
+      return res.status(403).send({message:'forbidden access'});
+    }
+    const query = {email:email};
+    const result = await bookingCollection.find(query).toArray();
+    res.send(result);
+})
+
   app.post('/signup', async(req, res) =>{
     const addUser = req.body
     console.log(addUser);
@@ -81,6 +131,9 @@ async function run(){
     const service = await userCollection.findOne(query);
     res.send(service);
 });
+
+
+
 
     }
     finally{
