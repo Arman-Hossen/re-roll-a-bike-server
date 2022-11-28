@@ -147,6 +147,72 @@ async function run(){
     res.send(result);
 
 });
+
+//
+
+
+//admin
+app.get('/users/admin/:email', async(req, res) =>{
+  const email = req.params.email;
+  const query = { email }
+  const user = await userCollection.findOne(query);
+  res.send({admin: user?.role === 'admin'})
+});
+
+//
+
+app.put("/allrole/admin/:id", verifyJWT, async (req, res) => {
+  const decodedEmail = req.decoded?.email;
+  const query = { email: decodedEmail };
+  const user = await userCollection.findOne(query);
+  if (user?.role !== "admin") {
+      return res
+          .status(403)
+          .send({ message: "forbidden access" });
+  }
+  const id = req.params.id;
+  const filter = { _id: ObjectId(id) };
+  const options = { upsert: true };
+  const updatedDoc = {
+      $set: {
+          role: "admin",
+      },
+  };
+  const result = await userCollection.updateOne(
+      filter,
+      updatedDoc,
+      options
+  );
+  res.send(result);
+});
+
+
+// app.put('/users/admin:id', async(req, res) =>{
+//   const id = req.params.id;
+//   const filter = {_id: ObjectId(id) }
+//   const options = {upsert: true};
+
+//   updatedDoc = {
+//     $set : {
+//       role: 'admin'
+//     }
+//   }
+//   const result = await userCollection.updateOne(filter, updatedDoc, options);
+//   res.send(result);
+// })
+// app.put("/allrole/admin/:id", async(req, res) => {
+//   const id = req.params.id
+//   const filter = {_id: ObjectId(id)}
+//   const options = { upsert: true }
+//   const updatedDoc = {
+//       $set: {
+//           role: 'admin'
+//       }
+//   }
+//   const result = await userCollection.updateOne(filter, updatedDoc, options)
+//   res.send(result)
+// });
+
   //role
   app.get('/roll/:email',async(req, res) =>{
     const email = req.params.email;
