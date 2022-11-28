@@ -124,6 +124,29 @@ async function run(){
 
     res.send(result);
   });
+
+  //
+  app.get('/allrole', async(req, res) =>{
+            
+            
+    let query ={}
+    if(req.query.role){
+       query = {
+        role: req.query.role
+       }
+    }
+    else if(req.query.email){
+        query = {
+            email: req.query.email
+           }
+
+    }
+    const cursor = userCollection.find(query);
+    const result = await cursor.toArray();
+    
+    res.send(result);
+
+});
   //role
   app.get('/roll/:email',async(req, res) =>{
     const email = req.params.email;
