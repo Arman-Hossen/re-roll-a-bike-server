@@ -159,6 +159,14 @@ app.get('/users/admin/:email', async(req, res) =>{
   res.send({admin: user?.role === 'admin'})
 });
 
+//seller
+app.get('/users/seller/:email', async(req, res) =>{
+  const email = req.params.email;
+  const query = { email }
+  const user = await userCollection.findOne(query);
+  res.send({seller: user?.role === 'Seller'})
+});
+
 //
 
 app.put("/allrole/admin/:id", verifyJWT, async (req, res) => {
