@@ -112,6 +112,13 @@ async function run(){
     const result = await userCollection.insertOne(addUser);
     res.send(result);
 })
+// add products
+app.post('/addproduct', async(req, res) =>{
+  const addProduct = req.body
+  console.log(addProduct);
+  const result = await singleCategoriesCollection.insertOne(addProduct);
+  res.send(result);
+})
   //
   app.put("/login", async (req, res) => {
     
@@ -154,7 +161,23 @@ async function run(){
 
 });
 
-//
+// buyers data
+app.get('/mydata', async(req, res) =>{
+            
+            
+  let query ={}
+   if(req.query.email){
+      query = {
+          email: req.query.email
+         }
+
+  }
+  const cursor = singleCategoriesCollection.find(query);
+  const result = await cursor.toArray();
+  
+  res.send(result);
+
+});
 
 
 //admin
