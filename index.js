@@ -172,12 +172,19 @@ app.get('/mydata', async(req, res) =>{
          }
 
   }
+  else if(req.query.advertise){
+    query = {
+      advertise: req.query.advertise
+     }
+
+  }
   const cursor = singleCategoriesCollection.find(query);
   const result = await cursor.toArray();
   
   res.send(result);
 
 });
+
 
 
 //admin
@@ -222,6 +229,19 @@ app.put("/allrole/admin/:id", verifyJWT, async (req, res) => {
   );
   res.send(result);
 });
+//advertise status
+app.patch('/advertiseupdate/:id', async (req, res) => {
+  const id = req.params.id;
+  const advertise = req.body.advertise
+  const query = { _id: ObjectId(id) }
+  const updatedDoc = {
+      $set:{
+        advertise: advertise
+      }
+  }
+  const result = await singleCategoriesCollection.updateOne(query, updatedDoc);
+  res.send(result);
+})
 
 
 
