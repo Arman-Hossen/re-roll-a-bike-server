@@ -79,7 +79,7 @@ async function run(){
       const query = {email:email};
       const user = await userCollection.findOne(query);
       if(user){
-          const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '1h'})
+          const token = jwt.sign({email}, process.env.ACCESS_TOKEN, {expiresIn: '10d'})
           return res.send({accessToken: token});
       }
       res.status(403).send({accessToken: ''})
@@ -97,7 +97,7 @@ async function run(){
   //booking get
   app.get('/bookingbike', verifyJWT, async(req, res) =>{
     const email = req.query.email;
-    const decodedEmail = req.decoded.email;
+    const decodedEmail = req.decoded?.email;
     if(email!== decodedEmail){
       return res.status(403).send({message:'forbidden access'});
     }
@@ -154,12 +154,32 @@ app.post('/addproduct', async(req, res) =>{
            }
 
     }
+   
     const cursor = userCollection.find(query);
     const result = await cursor.toArray();
     
     res.send(result);
 
 });
+app.get('/allproduct', async(req, res) =>{
+            
+            
+  let query ={}
+  if(req.query.report){
+    query = {
+      report: req.query.report
+       }
+  
+
+  }
+  
+  const cursor = singleCategoriesCollection.find(query);
+  const result = await cursor.toArray();
+  
+  res.send(result);
+
+});
+
 
 // buyers data
 app.get('/mydata', async(req, res) =>{
@@ -185,6 +205,23 @@ app.get('/mydata', async(req, res) =>{
 
 });
 
+//delete seller product
+
+app.delete('/deleteproduct/:id', async(req, res)=>{
+  const id = req.params.id;
+  const query = {_id: ObjectId(id)};
+
+  const result = await singleCategoriesCollection.deleteOne(query);
+  res.send(result);
+})
+//Delete user
+app.delete('/deleteuser/:id', async(req, res)=>{
+  const id = req.params.id;
+  const query = {_id: ObjectId(id)};
+
+  const result = await userCollection.deleteOne(query);
+  res.send(result);
+})
 
 
 //admin
@@ -242,6 +279,45 @@ app.patch('/advertiseupdate/:id', async (req, res) => {
   const result = await singleCategoriesCollection.updateOne(query, updatedDoc);
   res.send(result);
 })
+//report status
+app.patch('/reportupdate/:id', async (req, res) => {
+  const id = req.params.id;
+  const report = req.body.report;
+  const query = { _id: ObjectId(id) }
+  const updatedDoc = {
+      $set:{
+        report: report
+      }
+  }
+  const result = await singleCategoriesCollection.updateOne(query, updatedDoc);
+  res.send(result);
+})
+// verify status
+app.patch('/verifiedupdate/:id', async (req, res) => {
+  const id = req.params.id;
+  const verified = req.body.verified;
+  const query = { _id: ObjectId(id) }
+  const updatedDoc = {
+      $set:{
+        verified: verified
+      }
+  }
+  const result = await userCollection.updateOne(query, updatedDoc);
+  res.send(result);
+})
+app.patch('/verifiedcataupdate/:email', async (req, res) => {
+  const email = req.params.email;
+  const verified = req.body.verified;
+  const query = { email: email }
+  const updatedDoc = {
+      $set:{
+        verified: verified
+      }
+  }
+  const result = await singleCategoriesCollection.updateMany(query, updatedDoc);
+  res.send(result);
+})
+
 
 
 
