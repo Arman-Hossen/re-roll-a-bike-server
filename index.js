@@ -120,7 +120,7 @@ app.post('/addproduct', async(req, res) =>{
   res.send(result);
 })
   //
-  app.put("/login", async (req, res) => {
+  app.put("/login", verifyJWT, async (req, res) => {
     
     const user = req.body;
     const filter = { email: user.email }
